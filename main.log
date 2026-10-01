@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.12.10)  1 OCT 2026 21:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.12.10)  1 OCT 2026 22:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -551,18 +551,18 @@ ine 166.
 File: Partie_Mohamed/figures/trou_de_mesureq1.png Graphic file (type png)
 <use Partie_Mohamed/figures/trou_de_mesureq1.png>
 Package pdftex.def Info: Partie_Mohamed/figures/trou_de_mesureq1.png  used on i
-nput line 338.
+nput line 323.
 (pdftex.def)             Requested size: 362.37569pt x 229.756pt.
 
 
 [5 <./Partie_Mohamed/figures/trou_de_mesureq1.png>]
 
 [6]
-<Partie_Fatimetou/Q1_variation_Q.png, id=183, 462.528pt x 346.896pt>
+<Partie_Fatimetou/Q1_variation_Q.png, id=185, 462.528pt x 346.896pt>
 File: Partie_Fatimetou/Q1_variation_Q.png Graphic file (type png)
 <use Partie_Fatimetou/Q1_variation_Q.png>
 Package pdftex.def Info: Partie_Fatimetou/Q1_variation_Q.png  used on input lin
-e 510.
+e 495.
 (pdftex.def)             Requested size: 430.31812pt x 322.75285pt.
 
 
@@ -571,12 +571,12 @@ e 510.
 File: Partie_Fatimetou/Q1_variation_R.png Graphic file (type png)
 <use Partie_Fatimetou/Q1_variation_R.png>
 Package pdftex.def Info: Partie_Fatimetou/Q1_variation_R.png  used on input lin
-e 569.
+e 554.
 (pdftex.def)             Requested size: 430.31812pt x 322.75285pt.
 
 
 [8 <./Partie_Fatimetou/Q1_variation_Q.png>]
-Overfull \hbox (75.46175pt too wide) in paragraph at lines 601--605
+Overfull \hbox (75.46175pt too wide) in paragraph at lines 586--590
 \T1/cmr/m/n/10.95 On s'intéresse dé-sor-mais à la lo-cal-i-sa-tion d'un robot à
  l'aide d'un EKF (fichier \T1/cmtt/m/n/10.95 tp1_part2_EKFLocalization.py\T1/cm
 r/m/n/10.95 ).
@@ -587,7 +587,7 @@ r/m/n/10.95 ).
 [9 <./Partie_Fatimetou/Q1_variation_R.png>]
 
 [10]
-Overfull \hbox (3.85843pt too wide) in paragraph at lines 763--768
+Overfull \hbox (3.85843pt too wide) in paragraph at lines 748--753
 []\T1/cmr/m/n/10.95 Dérive de l'estimation. Sans recadrage par les amers, le fi
 l-tre in-tè-gre unique-ment l'odométrie
  []
@@ -601,7 +601,7 @@ l-tre in-tè-gre unique-ment l'odométrie
 File: Partie_Fatimetou/Q3_Pdiminue_Qaugmente.png Graphic file (type png)
 <use Partie_Fatimetou/Q3_Pdiminue_Qaugmente.png>
 Package pdftex.def Info: Partie_Fatimetou/Q3_Pdiminue_Qaugmente.png  used on in
-put line 936.
+put line 921.
 (pdftex.def)             Requested size: 430.31812pt x 214.7965pt.
 
 
@@ -612,10 +612,10 @@ File: Partie_Fatimetou/Q3_distance_large_direction_correct.png Graphic file (ty
 pe png)
 <use Partie_Fatimetou/Q3_distance_large_direction_correct.png>
 Package pdftex.def Info: Partie_Fatimetou/Q3_distance_large_direction_correct.p
-ng  used on input line 969.
+ng  used on input line 954.
 (pdftex.def)             Requested size: 430.31812pt x 205.74112pt.
 
-Overfull \hbox (10.1434pt too wide) in paragraph at lines 991--995
+Overfull \hbox (10.1434pt too wide) in paragraph at lines 976--980
 \T1/cmr/m/n/10.95 Dans cette ex-péri-ence, on étudie le com-porte-ment de l'EKF
  lorsque seule une par-tie de l'observation
  []
@@ -624,7 +624,7 @@ Overfull \hbox (10.1434pt too wide) in paragraph at lines 991--995
 File: Partie_Fatimetou/Q4_distance.png Graphic file (type png)
 <use Partie_Fatimetou/Q4_distance.png>
 Package pdftex.def Info: Partie_Fatimetou/Q4_distance.png  used on input line 9
-98.
+83.
 (pdftex.def)             Requested size: 430.31812pt x 191.50554pt.
 
 
@@ -633,7 +633,7 @@ Package pdftex.def Info: Partie_Fatimetou/Q4_distance.png  used on input line 9
 File: Partie_Fatimetou/Q4_direction.png Graphic file (type png)
 <use Partie_Fatimetou/Q4_direction.png>
 Package pdftex.def Info: Partie_Fatimetou/Q4_direction.png  used on input line 
-1023.
+1008.
 (pdftex.def)             Requested size: 430.31812pt x 175.46588pt.
 
 
@@ -672,7 +672,7 @@ xlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texl
 ive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texliv
 e/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/
 2025/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb>
-Output written on main.pdf (16 pages, 1886218 bytes).
+Output written on main.pdf (16 pages, 1885892 bytes).
 PDF statistics:
  375 PDF objects out of 1000 (max. 8388607)
  302 compressed objects within 4 object streams
