@@ -1,0 +1,10 @@
+[project]
+name = "kalman-tp1"
+version = "0.1.0"
+description = "TP1 Kalman filtering (ENSTA)"
+requires-python = ">=3.11"
+dependencies = [
+    "pymupdf>=1.24.0",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+]
