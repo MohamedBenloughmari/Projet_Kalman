@@ -1,0 +1,654 @@
+\documentclass[a4paper,12pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+
+% Marges
+\geometry{margin=2.5cm}
+
+% Informations du document
+\title{Filtre de Kalman}
+\author{Fatimetou Narjah}
+\date{Octobre 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Question 1 -- Localisation GNSS avec un filtre de Kalman}
+
+Dans cette partie, on applique un filtre de Kalman à un problème
+simplifié de localisation GNSS. Le vecteur d'état est composé de la
+position et de la vitesse du système :
+
+\begin{equation}
+X_k =
+\begin{bmatrix}
+\mathrm{Pos}_k\\
+\mathrm{Vel}_k
+\end{bmatrix}
+\in \mathbb{R}^6.
+\end{equation}
+
+Le modèle d'évolution utilisé est, pour $\Delta t = 1$ :
+
+\begin{equation}
+X_k =
+\begin{bmatrix}
+I_3 & \Delta t I_3\\
+0_3 & I_3
+\end{bmatrix}
+X_{k-1} + \eta_k,
+\qquad
+\eta_k \sim \mathcal{N}(0,Q).
+\end{equation}
+
+Le modèle d'observation est :
+
+\begin{equation}
+Y_k =
+\begin{bmatrix}
+I_3 & 0_3
+\end{bmatrix}
+X_k + \nu_k,
+\qquad
+\nu_k \sim \mathcal{N}(0,R).
+\end{equation}
+
+Ainsi, les mesures GNSS fournissent directement une information sur
+la position, tandis que la vitesse est estimée par le filtre à partir
+du modèle dynamique et des mesures successives.
+
+
+\subsection{1.a -- Implémentation du filtre de Kalman}
+
+Le filtre de Kalman fonctionne en deux étapes principales : la
+prédiction et la correction.
+
+Lors de la prédiction, l'état précédent est propagé à l'instant
+suivant à l'aide du modèle dynamique :
+
+\begin{equation}
+X_{k|k-1} = F X_{k-1|k-1},
+\end{equation}
+
+avec
+
+\begin{equation}
+F =
+\begin{bmatrix}
+I_3 & \Delta t I_3\\
+0_3 & I_3
+\end{bmatrix}.
+\end{equation}
+
+La covariance prédite est donnée par :
+
+\begin{equation}
+P_{k|k-1}
+=
+F P_{k-1|k-1} F^T + Q.
+\end{equation}
+
+Lorsque la mesure GNSS $Y_k$ est disponible, le filtre calcule
+l'innovation :
+
+\begin{equation}
+\widetilde{Y}_k
+=
+Y_k-HX_{k|k-1},
+\end{equation}
+
+avec
+
+\begin{equation}
+H =
+\begin{bmatrix}
+I_3 & 0_3
+\end{bmatrix}.
+\end{equation}
+
+La covariance de l'innovation est :
+
+\begin{equation}
+S_k =
+HP_{k|k-1}H^T+R.
+\end{equation}
+
+Le gain de Kalman est alors calculé par :
+
+\begin{equation}
+K_k =
+P_{k|k-1}H^T
+\left(
+HP_{k|k-1}H^T+R
+\right)^{-1}.
+\end{equation}
+
+L'état est ensuite corrigé à partir de la mesure :
+
+\begin{equation}
+X_{k|k}
+=
+X_{k|k-1}
++
+K_k
+\left(
+Y_k-HX_{k|k-1}
+\right).
+\end{equation}
+
+Enfin, la covariance après correction est donnée par :
+
+\begin{equation}
+P_{k|k}
+=
+(I-K_kH)P_{k|k-1}.
+\end{equation}
+
+La figure suivante présente les résultats obtenus avec le filtre de
+Kalman dans le cas nominal.
+
+
+\begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{Q1.png}
+        \caption{Résultats du filtre de Kalman dans le cas nominal :
+    positions et vitesses réelles et estimées, avec l'incertitude
+    représentée par $3\sigma$.}
+    \label{fig:q1_reference}
+\end{figure}
+
+On observe que les estimations des positions suivent correctement les
+valeurs réelles. Les courbes estimées restent proches des courbes réelles,
+ce qui montre que le filtre combine efficacement les prédictions du modèle
+dynamique et les mesures GNSS.
+
+Les trois composantes de la vitesse ne sont pas directement mesurées par
+le modèle d'observation. Elles sont donc estimées indirectement à partir
+du modèle dynamique et de l'évolution successive des positions.
+
+Au début de la simulation, l'incertitude est relativement importante en
+raison de l'incertitude initiale sur l'état. Lorsque les mesures GNSS sont
+disponibles, l'étape de correction permet de réduire la covariance de
+l'estimation. Entre deux mesures, la covariance peut cependant augmenter
+à nouveau lors de la prédiction à cause du terme $Q$.
+
+La zone grise représente l'intervalle d'incertitude correspondant à
+$\pm3\sigma$. On constate ainsi que le filtre devient progressivement plus
+confiant dans son estimation lorsque les observations sont régulièrement
+disponibles.
+
+
+\subsection{1.b -- Trou de mesure}
+
+Pour cette expérience, les mesures GNSS sont volontairement
+supprimées pendant un intervalle de temps, par exemple entre
+$t=10$ et $t=20$.
+
+Pendant cette période, aucune nouvelle mesure de position n'est
+disponible pour le filtre. L'étape de correction ne peut donc pas être
+effectuée. Le filtre réalise uniquement l'étape de prédiction :
+
+\begin{equation}
+X_{k|k}=X_{k|k-1},
+\end{equation}
+
+et la covariance continue d'être propagée selon :
+
+\begin{equation}
+P_{k|k-1}
+=
+FP_{k-1|k-1}F^T+Q.
+\end{equation}
+
+La figure suivante montre le comportement du filtre pendant le trou
+de mesure.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Q1_trou_mesure.png}
+    \caption{Comportement du filtre lors du trou de mesure GNSS entre
+    $t=10$ et $t=20$.}
+    \label{fig:q1_trou}
+\end{figure}
+
+On observe que, pendant le trou de mesure, l'incertitude augmente
+progressivement. En effet, à chaque étape de prédiction, le terme $Q$
+est ajouté à la covariance. Comme aucune mesure n'est disponible,
+aucune étape de correction ne vient réduire cette covariance.
+
+L'erreur d'estimation peut également augmenter pendant cette période.
+Le filtre continue à faire évoluer l'état uniquement à partir du
+modèle dynamique. Les erreurs du modèle et le bruit de dynamique
+s'accumulent donc progressivement.
+
+Lorsque les mesures GNSS redeviennent disponibles, le filtre reprend
+l'étape de correction. Les nouvelles mesures permettent alors de
+corriger l'estimation et de réduire progressivement l'incertitude.
+
+Cette expérience montre donc l'importance des mesures : même si le
+filtre peut continuer à fonctionner en l'absence temporaire de
+mesures, son incertitude augmente tant qu'aucune observation ne permet
+de corriger la prédiction.
+
+
+\subsection{1.c -- Influence du bruit de dynamique $Q$}
+
+Dans cette expérience, on étudie l'influence de la matrice $Q$, qui
+représente le bruit associé au modèle dynamique. Elle traduit
+l'incertitude sur l'évolution du système entre deux instants.
+
+La covariance prédite est donnée par :
+
+\begin{equation}
+P_{k|k-1}
+=
+F P_{k-1|k-1}F^T + Q.
+\end{equation}
+
+Dans le cas nominal, la matrice de covariance utilisée est :
+
+\begin{equation}
+Q_{\mathrm{initial}}
+=
+\operatorname{diag}
+(10^{-4},10^{-4},10^{-4},10^{-2},10^{-2},10^{-2}).
+\end{equation}
+
+Pour cette expérience, nous avons augmenté le bruit de dynamique d'un
+facteur 100 :
+
+\begin{equation}
+Q_{\mathrm{nouveau}} = 100 Q_{\mathrm{initial}},
+\end{equation}
+
+soit :
+
+\begin{equation}
+Q_{\mathrm{nouveau}}
+=
+\operatorname{diag}
+(10^{-2},10^{-2},10^{-2},1,1,1).
+\end{equation}
+
+Lorsque $Q$ augmente, le terme ajouté à la covariance lors de la
+prédiction devient plus important. Ainsi,
+
+\begin{equation}
+Q \uparrow
+\quad\Longrightarrow\quad
+P_{k|k-1} \uparrow
+\quad\Longrightarrow\quad
+\sigma \uparrow.
+\end{equation}
+
+L'incertitude représentée par la zone correspondant à $3\sigma$ devient
+donc plus importante.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Q1_variation_Q.png}
+    \caption{Influence d'une augmentation du bruit de dynamique $Q$ sur
+    l'estimation et l'incertitude du filtre.}
+    \label{fig:q1_Q}
+\end{figure}
+
+On observe que les bandes d'incertitude sont plus larges lorsque $Q$ est
+augmenté. En effet, le filtre considère que le modèle dynamique est moins
+fiable et qu'une erreur plus importante peut être introduite à chaque
+étape de prédiction.
+
+Cette modification influence également le gain de Kalman :
+
+\begin{equation}
+K_k =
+P_{k|k-1}H^T
+\left(
+HP_{k|k-1}H^T+R
+\right)^{-1}.
+\end{equation}
+
+Lorsque $Q$ augmente, $P_{k|k-1}$ augmente. Le filtre estime donc que sa
+prédiction est moins précise et accorde relativement plus de poids aux
+mesures GNSS lors de la correction.
+
+On observe ainsi deux effets successifs : pendant la prédiction,
+l'incertitude augmente plus rapidement en raison de la valeur élevée de
+$Q$ ; lors de la correction, les mesures GNSS permettent de réduire à
+nouveau cette incertitude.
+
+À l'inverse, lorsque $Q$ est faible, le filtre considère que le modèle
+dynamique est plus fiable. La covariance prédite reste alors plus faible
+et la prédiction conserve davantage de poids dans l'estimation.
+
+\subsection{1.d -- Influence du bruit de mesure $R$}
+
+Dans cette expérience, on fait varier la matrice $R$, qui représente
+le bruit associé aux mesures GNSS.
+
+La covariance de l'innovation est donnée par :
+
+\begin{equation}
+S_k =
+HP_{k|k-1}H^T+R.
+\end{equation}
+
+Le gain de Kalman est :
+
+\begin{equation}
+K_k =
+P_{k|k-1}H^T
+\left(
+HP_{k|k-1}H^T+R
+\right)^{-1}.
+\end{equation}
+
+Lorsque $R$ est faible, le filtre considère que les mesures GNSS sont
+précises. Leur influence dans la correction est donc importante.
+
+Lorsque $R$ est élevé, le filtre considère au contraire que les
+mesures GNSS sont fortement bruitées. Leur influence sur l'estimation
+diminue et le filtre s'appuie davantage sur la prédiction dynamique.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Q1_variation_R.png}
+        \caption{Influence de la variation du bruit de mesure $R$ sur
+    l'estimation et l'incertitude du filtre.}
+    \label{fig:q1_R}
+\end{figure}
+
+On observe ainsi que la valeur de $R$ contrôle directement la confiance
+accordée aux mesures GNSS. Lorsque $R$ est faible, le gain de Kalman est
+plus important et l'estimation est davantage corrigée par les mesures.
+Lorsque $R$ augmente, le gain diminue et l'estimation reste davantage
+influencée par la prédiction dynamique.
+
+Ainsi, $Q$ et $R$ déterminent la manière dont le filtre arbitre entre la
+prédiction et la mesure : $Q$ caractérise l'incertitude du modèle
+dynamique, tandis que $R$ caractérise l'incertitude des mesures.
+
+
+\section{Question 2}
+
+\subsection{Question 2.2 -- Sensor failure}
+Pour étudier l'effet d'une défaillance du capteur, on modifie la fonction
+\texttt{get\_observation(k)} afin qu'elle retourne \texttt{None} pendant
+l'intervalle $2500 < k < 3500$ :
+
+\begin{verbatim}
+if k > 2500 and k < 3500:
+    return [None, None]
+\end{verbatim}
+
+Ainsi, pendant cette période, aucune observation des landmarks n'est
+disponible pour le filtre. Le filtre effectue donc toujours l'étape de
+prédiction, mais il ne peut plus effectuer l'étape de correction. Dans
+le code, on passe alors dans le cas :
+
+\begin{verbatim}
+else:
+    xEst = xPred
+    PEst = PPred
+\end{verbatim}
+
+L'état estimé évolue donc uniquement à partir du modèle de
+mouvement. Il n'y a alors aucune nouvelle information permettant de corriger l'estimation à partir des observations :
+
+\[
+x_{k|k}=x_{k|k-1},
+\]
+
+et la covariance continue d'être propagée par :
+
+\[
+P_{k|k-1}
+=
+A P_{k-1|k-1} A^T + BQB^T.
+\]
+
+L'absence de mesure a deux conséquences principales. Premièrement,
+l'estimation devient progressivement moins précise, car les erreurs et
+le bruit du modèle de mouvement s'accumulent sans être corrigés par une
+nouvelle observation. Deuxièmement, l'incertitude du filtre augmente.
+En effet, le terme $BQB^T$ est ajouté à la covariance à chaque étape de
+prédiction, alors qu'aucune étape de correction ne vient ensuite réduire
+cette covariance.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Q2_apres_exclusion.png}
+    \caption{Résultats obtenus lors de la défaillance du capteur entre
+    $k=2500$ et $k=3500$.}
+\end{figure}
+
+La figure permet de visualiser ce comportement. Avant $k=2500$, les
+observations sont disponibles et la trajectoire EKF (rouge) reste proche
+de la trajectoire réelle (noir). Le filtre peut régulièrement corriger
+sa prédiction grâce aux observations des landmarks.
+
+Entre $k=2500$ et $k=3500$, on observe une forte augmentation des bandes
+d'incertitude $3\sigma$ pour $x$, $y$ et $\theta$. Cette augmentation est
+due au fait que le filtre fonctionne uniquement en prédiction pendant
+cette période. L'incertitude n'est donc plus réduite par les mesures et
+le bruit de dynamique $Q$ s'accumule. La trajectoire estimée peut
+également s'écarter de la trajectoire réelle, puisque le filtre ne
+dispose plus d'observations pour corriger les erreurs accumulées.
+
+On remarque également que l'augmentation de l'incertitude n'est pas
+identique pour $x$, $y$ et $\theta$. Chaque composante possède sa propre
+dynamique et sa propre covariance, et les erreurs de mouvement sont
+propagées à travers la matrice $A$. Une incertitude sur l'orientation
+peut notamment affecter la position lors de la propagation du mouvement.
+
+À partir de $k=3500$, les observations redeviennent disponibles. Le
+filtre recommence alors à effectuer l'étape de correction. Les nouvelles
+mesures permettent de réduire l'incertitude et de recaler progressivement
+l'estimation sur la trajectoire réelle. On observe donc une diminution
+des bandes $3\sigma$ après la fin de la défaillance.
+
+Cette expérience montre ainsi que le filtre de Kalman peut continuer à
+estimer l'état même sans mesure, mais uniquement grâce au modèle
+dynamique. En revanche, en l'absence d'observations, l'incertitude
+augmente progressivement et l'estimation devient moins fiable. Le retour
+des mesures permet ensuite de corriger les erreurs accumulées.
+
+\subsection{Question 2.3 -- Model errors}
+
+Dans cette partie, on étudie l'influence d'une mauvaise estimation des
+bruits utilisés par le filtre de Kalman. Les matrices $QTrue$ et $PYTrue$
+correspondent aux bruits réellement utilisés dans le simulateur, tandis
+que $QEst$ et $PYEst$ correspondent aux bruits supposés par le filtre.
+
+On rappelle que la covariance prédite est donnée par :
+
+\[
+P_{k|k-1}
+=
+A P_{k-1|k-1} A^T + BQEstB^T,
+\]
+
+tandis que la covariance de l'innovation est :
+
+\[
+S_k = H P_{k|k-1} H^T + PYEst.
+\]
+
+Le gain de Kalman est alors :
+
+\[
+W_k =
+P_{k|k-1}H^T
+\left(
+H P_{k|k-1}H^T + PYEst
+\right)^{-1}.
+\]
+
+Ainsi, les valeurs de $QEst$ et $PYEst$ déterminent la confiance que le
+filtre accorde respectivement au modèle de mouvement et aux observations.
+
+Dans un premier cas, on considère un bruit d'odométrie estimé très élevé
+et un bruit d'observation estimé très faible. On peut par exemple
+augmenter fortement $QEst$ et diminuer $PYEst$ :
+
+\begin{verbatim}
+QEst = 100 * QTrue
+PYEst = 0.1 * PYTrue
+\end{verbatim}
+
+Le filtre considère alors que l'odométrie est très bruitée et donc peu
+fiable. La covariance prédite augmente, car le terme $B QEst B^T$ devient
+important. En revanche, comme $PYEst$ est faible, le filtre considère les
+observations des landmarks comme très précises.
+
+Le gain de Kalman donne alors davantage de poids aux observations et
+moins de poids à la prédiction issue de l'odométrie. L'estimation est donc
+fortement corrigée par les observations. On peut observer une diminution
+de l'incertitude après les corrections, même si l'incertitude prédite
+entre deux observations est importante.
+
+Dans un deuxième cas, on considère que le bruit estimé sur la distance
+des landmarks est important alors que le bruit estimé sur leur direction
+reste correct. Comme les observations sont composées de la distance et
+de la direction,
+
+\[
+z =
+\begin{bmatrix}
+r\\
+\theta
+\end{bmatrix},
+\]
+
+il est possible de modifier uniquement la première composante de
+$PYEst$ :
+
+\begin{verbatim}
+PYEst = np.diag([
+    valeur_grande,
+    (6*pi/180)**2
+])
+\end{verbatim}
+
+Par exemple :
+
+\begin{verbatim}
+PYEst = np.diag([100.0, (6*pi/180)**2])
+\end{verbatim}
+
+Dans ce cas, le filtre considère que la mesure de distance est très
+bruitée. Il lui accorde donc moins de confiance. En revanche, la mesure
+de direction conserve son niveau de bruit initial et reste donc
+considérée comme relativement fiable.
+
+Cette différence est visible dans le gain de Kalman : la contribution de
+la distance dans la correction devient plus faible, tandis que la
+direction conserve une influence importante sur l'estimation.
+
+On observe ainsi que le filtre ne traite pas nécessairement toutes les
+composantes d'une observation de la même manière. Une composante dont le
+bruit est estimé comme important reçoit moins de poids dans la correction,
+alors qu'une composante considérée comme précise conserve davantage
+d'influence.
+
+Ces expériences montrent donc l'importance d'une bonne estimation des
+matrices de covariance. Si le filtre surestime ou sous-estime fortement
+les bruits réels, il peut accorder une confiance inadaptée au modèle
+dynamique ou aux observations, ce qui modifie directement le gain de
+Kalman et donc la qualité de l'estimation.
+
+\subsection{Question 2.4 -- Observabilité partielle}
+
+Dans cette expérience, nous étudions le comportement de l'EKF lorsque
+l'observation complète du landmark n'est plus disponible. L'observation
+initiale est composée de la distance $r$ et de la direction $\theta$.
+Nous considérons successivement les deux cas où seule la distance est
+utilisée, puis où seule la direction est utilisée.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Q4_distance.png}
+    \caption{Estimation avec uniquement la distance aux landmarks.}
+    \label{fig:q4_distance}
+\end{figure}
+
+Lorsque seule la distance est utilisée, l'observation est donnée par
+
+\[
+z = r =
+\sqrt{(x_L-x)^2+(y_L-y)^2}.
+\]
+
+Dans ce cas, l'information fournie par le capteur permet de contraindre
+la position du robot par rapport au landmark, mais elle ne dépend pas
+directement de son orientation $\theta$. En effet, une rotation du robot
+autour de sa position ne modifie pas la distance qui le sépare du
+landmark.
+
+On observe néanmoins sur la figure que la trajectoire estimée par l'EKF
+(en rouge) reste très proche de la trajectoire réelle (en noir). Les
+erreurs sur $x$ et $y$ restent également proches de zéro. L'utilisation
+de plusieurs observations de landmarks permet donc au filtre d'obtenir
+une information suffisante pour maintenir une bonne estimation de la
+position.
+
+En revanche, l'incertitude sur l'orientation est beaucoup plus
+importante. La bande correspondant à $3\sigma$ pour $\theta$ reste
+large, alors que l'erreur réelle reste globalement proche de zéro.
+L'orientation est donc moins directement observable avec la distance
+seule. Elle peut cependant être estimée indirectement grâce au modèle
+dynamique et aux observations successives.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Q4_direction.png}
+    \caption{Estimation avec uniquement la direction des landmarks.}
+    \label{fig:q4_direction}
+\end{figure}
+
+Dans le second cas, seule la direction du landmark est utilisée :
+
+\[
+z = \theta_L-\theta,
+\]
+
+où $\theta_L$ représente l'angle entre le robot et le landmark dans le
+repère global. Cette observation contient directement une information
+sur l'orientation du robot, contrairement à l'observation de distance.
+
+La figure montre que la trajectoire estimée par l'EKF reste également
+très proche de la trajectoire réelle. Les erreurs sur $x$ et $y$ restent
+faibles et proches de zéro. La position peut donc encore être estimée
+à partir des directions successives des landmarks, même si aucune
+information de distance n'est utilisée.
+
+La différence la plus importante apparaît sur l'orientation. L'erreur
+sur $\theta$ reste autour de zéro et, surtout, la bande d'incertitude
+$3\sigma$ est beaucoup plus faible que dans le cas où seule la distance
+est utilisée. L'estimation de l'orientation est donc nettement plus
+contrainte par une mesure de direction, car cette dernière dépend
+directement de $\theta$.
+
+On peut ainsi comparer les deux observations. Avec la distance seule,
+la position est bien contrainte mais l'orientation est moins
+observable. Avec la direction seule, l'orientation est directement
+informée par la mesure et son incertitude est fortement réduite, tandis
+que la position reste estimable grâce aux observations successives et
+au modèle dynamique.
+
+Ces résultats montrent donc que les deux types de mesures apportent des
+informations complémentaires. La distance fournit principalement une
+contrainte géométrique sur la position, tandis que la direction apporte
+une information directe sur l'orientation. Malgré la réduction de
+l'information disponible, l'EKF reste capable de suivre correctement la
+trajectoire dans les deux cas, mais avec une incertitude différente
+selon la composante observée.
+\end{document}
