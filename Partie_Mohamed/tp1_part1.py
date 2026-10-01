@@ -55,7 +55,7 @@ Rk = np.array([
     [0.0, 100.0, 0.0],
     [0.0,0.0,100.0]])
 Qk=1*Qk
-Rk=10*Rk
+Rk=1*Rk
 print("XTrue0",XTrue[0])
 print("X0",X0)
 print("P0",P0)
